@@ -6,11 +6,12 @@
   outputs = {nixpkgs, ...}: let
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
+    julia = pkgs.julia.withPackages ["LanguageServer"];
     julia-language-server = pkgs.writeShellApplication {
       name = "julia-language-server";
-      runtimeInputs = [pkgs.julia];
+      runtimeInputs = [julia];
       text = ''
-        exec julia --project=${./.} -e 'using LanguageServer; runserver()'
+        exec julia -e 'using LanguageServer; runserver()' "$@"
       '';
     };
   in {
@@ -20,7 +21,7 @@
       inherit julia-language-server;
     };
     devShells.${system}.default = pkgs.mkShell {
-      packages = [pkgs.julia julia-language-server];
+      packages = [julia julia-language-server];
     };
   };
 }
